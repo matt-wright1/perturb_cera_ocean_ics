@@ -11,7 +11,7 @@
 
 # Load required modules
 module load cdo
-module load python
+module load python3
 
 # Define directories
 SCRATCH_DIR="$SCRATCH/cera_files"
@@ -96,14 +96,21 @@ process_year() {
   # Step 14-15: Zip and move files
   gzip $HALF_OUTPUT_DIR/${year}_halfPert.nc
   gzip $DOUB_OUTPUT_DIR/${year}_doubPert.nc
-  ecp $HALF_OUTPUT_DIR/${year}_halfPert.nc.gz ec:/xgb/public/frmw/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
-  ecp $DOUB_OUTPUT_DIR/${year}_doubPert.nc.gz ec:/xgb/public/frmw/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
+  ecp $HALF_OUTPUT_DIR/${year}_halfPert.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
+  ecp $DOUB_OUTPUT_DIR/${year}_doubPert.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
 
   # Move additional CERA-20C files for the restart
-  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz ec:/xgb/public/frmw/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
-  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz ec:/xgb/public/frmw/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
-  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1101_180000_restart_ice_2.nc.gz ec:/xgb/public/frmw/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
+  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
+  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
+  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1101_180000_restart_ice_2.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
 
+  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
+  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
+  ecp $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
+
+  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
+  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
+  ecp $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
   # Cleanup $SCRATCH directories for CERA and Hindcast files
   rm -f $SCRATCH_DIR/*_$year*.nc
   rm -f $HINDCAST_DIR/*_$year*.nc
