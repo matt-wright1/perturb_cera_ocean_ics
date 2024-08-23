@@ -32,7 +32,8 @@ YEARS_NEW=(1985)
 # Function to get NNNN based on year
 get_NNNN() {
   local year=$1
-  if [ $year -ge 1925 -a $year -le 1931 ]; then echo 2369
+  if [ $year -ge 1925 -a $year -le 1925 ]; then echo 2368
+  elif [ $year -ge 1926 -a $year -le 1931 ]; then echo 2369
   elif [ $year -ge 1932 -a $year -le 1939 ]; then echo 2370
   elif [ $year -ge 1940 -a $year -le 1947 ]; then echo 2371
   elif [ $year -ge 1948 -a $year -le 1950 ]; then echo 2372
@@ -72,9 +73,11 @@ process_year() {
 
   # Step 2: Copy and unzip CERA-20C dataset
   cera_file="${NNNN}_${year}1101_180000_restart_2.nc.gz"
-  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/$cera_file $SCRATCH_DIR/
-  gunzip $SCRATCH_DIR/$cera_file
-  mv $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_2.nc $SCRATCH_DIR/cera_${year}.nc
+  for folder in enda01 enda02 enda03 enda04 control; do
+    ecp ec:/ERAS/cera20c/${NNNN}/an/restart/${folder}/$year/$cera_file $SCRATCH_DIR/
+    gunzip $SCRATCH_DIR/$cera_file
+    mv $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_2.nc $SCRATCH_DIR/cera_${folder}_${year}.nc
+  done
 
   # Process Hindcast types (BEST, HALF, DOUB)
   for type in "BEST" "HALF" "DOUB"; do
@@ -91,26 +94,29 @@ process_year() {
   done
 
   # Step 13: Run Python script for regridding and further processing
-  python ocean_ic_processing.py $year $SCRATCH_DIR $HINDCAST_DIR $HALF_OUTPUT_DIR $DOUB_OUTPUT_DIR $PERM_DIR
-
-  # Step 14-15: Zip and move files
-  gzip $HALF_OUTPUT_DIR/${year}_halfPert.nc
-  gzip $DOUB_OUTPUT_DIR/${year}_doubPert.nc
-  ecp $HALF_OUTPUT_DIR/${year}_halfPert.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
-  ecp $DOUB_OUTPUT_DIR/${year}_doubPert.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
+  for folder in enda01 enda02 enda03 enda04 control; do
+    python3 ocean_ic_processing.py $year $SCRATCH_DIR $HINDCAST_DIR $HALF_OUTPUT_DIR $DOUB_OUTPUT_DIR $PERM_DIR $folder
+    gzip $HALF_OUTPUT_DIR/${year}_${folder}_halfPert.nc
+    gzip $DOUB_OUTPUT_DIR/${year}_${folder}_doubPert.nc
+    ecp $HALF_OUTPUT_DIR/${year}_${folder}_halfPert.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
+    ecp $DOUB_OUTPUT_DIR/${year}_${folder}_doubPert.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_180000_restart_2.nc.gz
+  done  
 
   # Move additional CERA-20C files for the restart
-  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
-  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
-  ecp ec:/ERAS/cera20c/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1101_180000_restart_ice_2.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
+  for folder in enda01 enda02 enda03 enda04 control; do
+    ecp ec:/ERAS/cera20c/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
+    ecp ec:/ERAS/cera20c/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
+    ecp ec:/ERAS/cera20c/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_${year}1101_180000_restart_ice_2.nc.gz $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
 
-  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
-  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
-  ecp $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
+    ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
+    ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
+    ecp $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz ec:/xgb/public/frmw/half/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
 
-  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
-  ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
-  ecp $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/control/$year/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
+    ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_${year}1102_increments_02.nc.gz
+    ecp $SCRATCH_DIR/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_${year}1102_increments_01.nc.gz
+    ecp $SCRATCH_DIR/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz ec:/xgb/public/frmw/doub/${NNNN}/an/restart/${folder}/$year/${NNNN}_${year}1101_180000_restart_ice_2.nc.gz
+  done
+  
   # Cleanup $SCRATCH directories for CERA and Hindcast files
   rm -f $SCRATCH_DIR/*_$year*.nc
   rm -f $HINDCAST_DIR/*_$year*.nc

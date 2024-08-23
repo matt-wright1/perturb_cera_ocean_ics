@@ -148,14 +148,14 @@ def regrid_to_orca1(path_to_regrid,output_path,horz_griddes='/perm/frmw/orca1_gr
     horz_wts = cdo.genbil(horz_grid,input=path_to_regrid)
     cdo.remap(horz_grid+','+horz_wts,input=path_to_regrid,output=output_path)
 
-def regrid_and_process(year, scratch_dir, hindcast_dir, half_output_dir, doub_output_dir, perm_dir, horz_griddes='/perm/frmw/orca1_griddes.txt'):
+def regrid_and_process(year, scratch_dir, hindcast_dir, half_output_dir, doub_output_dir, perm_dir, folder, horz_griddes='/perm/frmw/orca1_griddes.txt'):
 
     regrid_to_orca1(f"{hindcast_dir}/best_{year}_ensmean.nc",f"{hindcast_dir}/best_{year}_ensmean_regridded.nc",horz_griddes)
     regrid_to_orca1(f"{hindcast_dir}/half_{year}_ensmean.nc",f"{hindcast_dir}/half_{year}_ensmean_regridded.nc",horz_griddes)
     regrid_to_orca1(f"{hindcast_dir}/doub_{year}_ensmean.nc",f"{hindcast_dir}/doub_{year}_ensmean_regridded.nc",horz_griddes)
     
     # Load datasets
-    ds_cera = xr.open_dataset(f"{scratch_dir}/cera_{year}.nc")
+    ds_cera = xr.open_dataset(f"{scratch_dir}/cera_{folder}_{year}.nc")
     ds_best = xr.open_dataset(f"{hindcast_dir}/best_{year}_ensmean_regridded.nc")
     ds_half = xr.open_dataset(f"{hindcast_dir}/half_{year}_ensmean_regridded.nc")
     ds_doub = xr.open_dataset(f"{hindcast_dir}/doub_{year}_ensmean_regridded.nc")
@@ -184,8 +184,8 @@ def regrid_and_process(year, scratch_dir, hindcast_dir, half_output_dir, doub_ou
     balance_salinity(ds_cera_doubPert, ds_cera, ds_lsm.lsm)
 
     # Save outputs
-    ds_cera_halfPert.to_netcdf(f"{half_output_dir}/{year}_halfPert.nc")
-    ds_cera_doubPert.to_netcdf(f"{doub_output_dir}/{year}_doubPert.nc")
+    ds_cera_halfPert.to_netcdf(f"{half_output_dir}/{year}_{folder}_halfPert.nc")
+    ds_cera_doubPert.to_netcdf(f"{doub_output_dir}/{year}_{folder}_doubPert.nc")
 
 #Run script
 if __name__ == "__main__":
@@ -196,6 +196,7 @@ if __name__ == "__main__":
     half_output_dir = sys.argv[4]
     doub_output_dir = sys.argv[5]
     perm_dir = sys.argv[6]
+    folder = sys.argv[7]
 
     # Run the processing function
-    regrid_and_process(year, scratch_dir, hindcast_dir, half_output_dir, doub_output_dir, perm_dir)
+    regrid_and_process(year, scratch_dir, hindcast_dir, half_output_dir, doub_output_dir, perm_dir, folder)
