@@ -120,6 +120,49 @@ process_year() {
   # Cleanup $SCRATCH directories for CERA and Hindcast files
   rm -f $SCRATCH_DIR/*_$year*.nc
   rm -f $HINDCAST_DIR/*_$year*.nc
+
+  # Get SST dataset from MARS
+  #CERA-20C - not required for now as we are giving the files a delta T value to add to this during the model run, rather than the full field
+#   cat > mars_req <<EOF
+#     retrieve,
+#     class=ep,
+#     date=$year-11-01,
+#     expver=1,
+#     levtype=sfc,
+#     number=0,
+#     grid=AV,
+#     param=34.128,
+#     stream=enda,
+#     time=00:00:00,
+#     type=an,
+#     target="$SCRATCH_DIR/sst_$year.grib"
+# EOF
+#   mars mars_req
+  # all hindcast exps
+  for type in "BEST" "HALF" "DOUB"; do
+    expno=$(get_expno $year $type)
+    cat > mars_req <<EOF
+      retrieve,
+      class=uk,
+      date=$year-11-01,
+      expver=$expno,
+      fcmonth=4,
+      levtype=sfc,
+      method=1
+      number=0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20,
+      grid=AV,
+      param=34.128,
+      stream=msmm,
+      time=00:00:00,
+      type=fcmean,
+      target="$HINDCAST_DIR/sst_${type}_${year}.grib"
+EOF
+    mars mars_req
+
+#Then need a python file which loads them all, calculates the ens_mean of the hindcasts, finds doubminusbest, halfminusbest
+
+#Save files in correct format to location...grib format, save somewhere to hpcperm?
+
 }
 
 # Main loop for all years
