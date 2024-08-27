@@ -19,6 +19,7 @@ HINDCAST_DIR="$SCRATCH/hindcast_files"
 HALF_OUTPUT_DIR="$SCRATCH/half_output_files"
 DOUB_OUTPUT_DIR="$SCRATCH/doub_output_files"
 PERM_DIR="$PERM"
+PERM_OUTPUT_DIR="$HPCPERM/perturbed_sst"
 
 # Ensure required directories exist
 mkdir -p $SCRATCH_DIR $HINDCAST_DIR $HALF_OUTPUT_DIR $DOUB_OUTPUT_DIR
@@ -123,20 +124,20 @@ process_year() {
 
   # Get SST dataset from MARS
   #CERA-20C - not required for now as we are giving the files a delta T value to add to this during the model run, rather than the full field
-#   cat > mars_req <<EOF
-#     retrieve,
-#     class=ep,
-#     date=$year-11-01,
-#     expver=1,
-#     levtype=sfc,
-#     number=0,
-#     grid=AV,
-#     param=34.128,
-#     stream=enda,
-#     time=00:00:00,
-#     type=an,
-#     target="$SCRATCH_DIR/sst_$year.grib"
-# EOF
+  cat > mars_req <<EOF
+    retrieve,
+    class=ep,
+    date=$year-11-01,
+    expver=1,
+    levtype=sfc,
+    number=0,
+    grid=AV,
+    param=34.128/31.128/172.128,
+    stream=enda,
+    time=00:00:00,
+    type=an,
+    target="$SCRATCH_DIR/sst_$year.grib"
+EOF
 #   mars mars_req
   # all hindcast exps
   for type in "BEST" "HALF" "DOUB"; do
@@ -158,10 +159,10 @@ process_year() {
       target="$HINDCAST_DIR/sst_${type}_${year}.grib"
 EOF
     mars mars_req
+  done
+  python3 sst_processing.py $year $HINDCAST_DIR $HALF_OUTPUT_DIR $DOUB_OUTPUT_DIR $SCRATCH_DIR $PERM_OUTPUT_DIR
 
-#Then need a python file which loads them all, calculates the ens_mean of the hindcasts, finds doubminusbest, halfminusbest
-
-#Save files in correct format to location...grib format, save somewhere to hpcperm?
+#Do I need to do any relaxation between the fields?
 
 }
 
