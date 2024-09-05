@@ -147,12 +147,12 @@ def regrid_to_orca1(path_to_regrid,output_path,horz_griddes='/perm/frmw/orca1_gr
     ### generate weights file for regridding
     horz_wts = cdo.genbil(horz_grid,input=path_to_regrid)
     cdo.remap(horz_grid+','+horz_wts,input=path_to_regrid,output=output_path)
-
+    
 def regrid_and_process(year, scratch_dir, hindcast_dir, half_output_dir, doub_output_dir, perm_dir, folder, horz_griddes='/perm/frmw/orca1_griddes.txt'):
 
-    regrid_to_orca1(f"{hindcast_dir}/best_{year}_ensmean.nc",f"{hindcast_dir}/best_{year}_ensmean_regridded.nc",horz_griddes)
-    regrid_to_orca1(f"{hindcast_dir}/half_{year}_ensmean.nc",f"{hindcast_dir}/half_{year}_ensmean_regridded.nc",horz_griddes)
-    regrid_to_orca1(f"{hindcast_dir}/doub_{year}_ensmean.nc",f"{hindcast_dir}/doub_{year}_ensmean_regridded.nc",horz_griddes)
+    regrid_to_orca1(f"{hindcast_dir}/BEST_{year}_ensmean.nc",f"{hindcast_dir}/best_{year}_ensmean_regridded.nc",horz_griddes)
+    regrid_to_orca1(f"{hindcast_dir}/HALF_{year}_ensmean.nc",f"{hindcast_dir}/half_{year}_ensmean_regridded.nc",horz_griddes)
+    regrid_to_orca1(f"{hindcast_dir}/DOUB_{year}_ensmean.nc",f"{hindcast_dir}/doub_{year}_ensmean_regridded.nc",horz_griddes)
     
     # Load datasets
     ds_cera = xr.open_dataset(f"{scratch_dir}/cera_{folder}_{year}.nc")
@@ -180,8 +180,8 @@ def regrid_and_process(year, scratch_dir, hindcast_dir, half_output_dir, doub_ou
     ds_cera_doubPert['tn'] = ds_cera_doubPert['tn'] + ds_doubMinusBest.votemper[3, :, :, :]
 
     # Balance salinity
-    balance_salinity(ds_cera_halfPert, ds_cera, ds_lsm.lsm)
-    balance_salinity(ds_cera_doubPert, ds_cera, ds_lsm.lsm)
+    ds_cera_halfPert = balance_salinity(ds_cera_halfPert, ds_cera, ds_lsm.lsm)
+    ds_cera_doubPert = balance_salinity(ds_cera_doubPert, ds_cera, ds_lsm.lsm)
 
     # Save outputs
     ds_cera_halfPert.to_netcdf(f"{half_output_dir}/{year}_{folder}_halfPert.nc")

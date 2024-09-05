@@ -15,7 +15,7 @@ def process_sst(year, hindcast_dir, half_output_dir, doub_output_dir, scratch_di
     cdo = Cdo()
     
     cdo.selvar("var34", input=f"{scratch_dir}/sst_{year}.grib", output=f"{scratch_dir}/sst_{year}_var34.grib")
-    cdo.selvar("var31,var172", input=f"{scratch_dir}/sst_{year}.grib", output=f"{scratch_dir}/sst_{year}_ice_lsm.grib")
+    cdo.selvar("var139,var141,var170,var183,var198,var236,var235,var148,var206,var31,var238,var32,var33,var35,var36,var37,var38,var39,var40,var41,var42,var8,var9,var10,var11,var12,var13,var14", input=f"{scratch_dir}/sst_{year}.grib", output=f"{scratch_dir}/sst_{year}_rest.grib")
 
     cdo.timmean(input=f"{hindcast_dir}/sst_BEST_{year}.grib", output=f"{hindcast_dir}/sst_BEST_{year}_ensmean.grib")
     cdo.timmean(input=f"{hindcast_dir}/sst_HALF_{year}.grib", output=f"{hindcast_dir}/sst_HALF_{year}_ensmean.grib")
@@ -28,14 +28,14 @@ def process_sst(year, hindcast_dir, half_output_dir, doub_output_dir, scratch_di
     cdo.sub(input=f"{hindcast_dir}/sst_DOUB_{year}_ensmean_regridded.grib {hindcast_dir}/sst_BEST_{year}_ensmean_regridded.grib", output=f"{hindcast_dir}/sst_DOUBMINUSBEST_{year}_ensmean_regridded.grib")
     cdo.sub(input=f"{hindcast_dir}/sst_HALF_{year}_ensmean_regridded.grib {hindcast_dir}/sst_BEST_{year}_ensmean_regridded.grib", output=f"{hindcast_dir}/sst_HALFMINUSBEST_{year}_ensmean_regridded.grib")
 
-    cdo.expr("var34=var34*-1'", input=f"{hindcast_dir}/sst_DOUBMINUSBEST_{year}_ensmean_regridded.grib", output=f"{hindcast_dir}/sst_DOUBMINUSBEST_{year}_ensmean_regridded_neg.grib")
-    cdo.expr("var34=var34*-1'", input=f"{hindcast_dir}/sst_HALFMINUSBEST_{year}_ensmean_regridded.grib", output=f"{hindcast_dir}/sst_HALFMINUSBEST_{year}_ensmean_regridded_neg.grib")
+    cdo.expr("'var34=var34*-1'", input=f"{hindcast_dir}/sst_DOUBMINUSBEST_{year}_ensmean_regridded.grib", output=f"{hindcast_dir}/sst_DOUBMINUSBEST_{year}_ensmean_regridded_neg.grib")
+    cdo.expr("'var34=var34*-1'", input=f"{hindcast_dir}/sst_HALFMINUSBEST_{year}_ensmean_regridded.grib", output=f"{hindcast_dir}/sst_HALFMINUSBEST_{year}_ensmean_regridded_neg.grib")
 
     cdo.sub(input=f"{scratch_dir}/sst_{year}_var34.grib {hindcast_dir}/sst_HALFMINUSBEST_{year}_ensmean_regridded_neg.grib", output=f"{half_output_dir}/halfPert_{year}_sst.grib")
     cdo.sub(input=f"{scratch_dir}/sst_{year}_var34.grib {hindcast_dir}/sst_DOUBMINUSBEST_{year}_ensmean_regridded_neg.grib", output=f"{doub_output_dir}/doubPert_{year}_sst.grib")
 
-    cdo.merge(input=f"{half_output_dir}/halfPert_sst.grib {scratch_dir}/sst_{year}_ice_lsm.grib", output=f"{perm_output_dir}/half/sst_halfPert_{year}.grib")
-    cdo.merge(input=f"{doub_output_dir}/doubPert_sst.grib {scratch_dir}/sst_{year}_ice_lsm.grib", output=f"{perm_output_dir}/doub/sst_doubPert_{year}.grib")
+    cdo.merge(input=f"{half_output_dir}/halfPert_{year}_sst.grib {scratch_dir}/sst_{year}_rest.grib", output=f"{perm_output_dir}/half/sst_halfPert_{year}.grib")
+    cdo.merge(input=f"{doub_output_dir}/doubPert_{year}_sst.grib {scratch_dir}/sst_{year}_rest.grib", output=f"{perm_output_dir}/doub/sst_doubPert_{year}.grib")
 
 #Run script
 if __name__ == "__main__":
